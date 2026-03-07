@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kingdom Arts Academy — Prototype Overview</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #522d80;
+      --primary-dark: #3b1f5e;
+      --gold:      #fdb913;
+      --gold-dark: #e0a510;
+      --white:     #ffffff;
+      --off-white: #faf8ff;
+      --fg:        #111111;
+      --muted:     #666666;
+      --border:    #e2e2e2;
+      --accent-bg: #f8f4ff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--off-white);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── HERO ─────────────────────────────────────── */
+    .hero {
+      background: var(--primary);
+      position: relative;
+      overflow: hidden;
+      padding: 5rem 2rem 4.5rem;
+      text-align: center;
+    }
+
+
+    .hero-inner { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      background: var(--gold);
+      color: var(--primary);
+      font-size: .6rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      padding: .4rem 1.1rem;
+      border-radius: 999px;
+      margin-bottom: 1.6rem;
+    }
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: blink 1.6s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      margin-bottom: .7rem;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      color: rgba(255,255,255,.65);
+      font-weight: 500;
+      max-width: 520px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.65;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      background: var(--gold);
+      color: var(--primary);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 1rem 2.2rem;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 6px 28px rgba(253,185,19,.45);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .hero-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(253,185,19,.55);
+    }
+    .hero-cta .live-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22,163,74,.25);
+      animation: blink 1.4s infinite;
+    }
+
+    /* ─── WAVE DIVIDER ─────────────────────────────── */
+    .wave {
+      display: block;
+      width: 100%;
+      line-height: 0;
+      background: var(--primary);
+    }
+    .wave svg { display: block; width: 100%; }
+
+    /* ─── WRAPPER ──────────────────────────────────── */
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ─── SECTION LABEL ────────────────────────────── */
+    .sec-label {
+      font-size: .58rem;
+      font-weight: 900;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--primary);
+      opacity: .5;
+      margin-bottom: .9rem;
+    }
+
+    /* ─── VIEW-AS CALLOUT ──────────────────────────── */
+    .callout-section { padding: 4rem 1.5rem 0; }
+
+    .callout {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--primary);
+      border-radius: 2rem;
+      padding: 2.4rem 2.6rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.6rem;
+      align-items: start;
+      position: relative;
+      overflow: hidden;
+    }
+    .callout::after {
+      content: '🎭';
+      position: absolute;
+      font-size: 9rem;
+      right: 1.5rem;
+      bottom: -1.5rem;
+      opacity: .07;
+      line-height: 1;
+    }
+
+    .callout-icon-wrap {
+      background: var(--gold);
+      border-radius: 1rem;
+      width: 52px; height: 52px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .callout h3 {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin-bottom: .4rem;
+    }
+    .callout p {
+      font-size: .85rem;
+      color: rgba(255,255,255,.68);
+      line-height: 1.65;
+      max-width: 580px;
+    }
+    .callout-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: rgba(253,185,19,.15);
+      border: 1px solid rgba(253,185,19,.35);
+      color: var(--gold);
+      font-size: .6rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .4rem 1rem;
+      border-radius: 999px;
+      margin-top: .9rem;
+    }
+
+    /* ─── ROLES ────────────────────────────────────── */
+    .roles-section { padding: 4rem 1.5rem; }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.1rem;
+    }
+
+    .role-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 1.5rem;
+      padding: 1.6rem 1.4rem;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .role-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(82,45,128,.12);
+    }
+
+    .role-pill {
+      display: inline-block;
+      font-size: .58rem;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: .3rem .85rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    .rc-student   .role-pill { background: #ede9fe; color: #5b21b6; }
+    .rc-guest     .role-pill { background: #fef9c3; color: #92400e; }
+    .rc-instructor .role-pill { background: #dcfce7; color: #166534; }
+    .rc-admin     .role-pill { background: #fce7f3; color: #9d174d; }
+
+    .role-card h4 {
+      font-size: .95rem;
+      font-weight: 900;
+      margin-bottom: .75rem;
+      color: var(--fg);
+    }
+
+    .role-card ul { list-style: none; }
+    .role-card ul li {
+      font-size: .78rem;
+      color: var(--muted);
+      padding: .28rem 0;
+      border-bottom: 1px solid #f0edf8;
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: .4rem;
+    }
+    .role-card ul li:last-child { border-bottom: none; }
+    .role-card ul li::before {
+      content: '›';
+      color: var(--primary);
+      font-weight: 900;
+      font-size: .9rem;
+      flex-shrink: 0;
+      line-height: 1.3;
+    }
+
+    /* ─── DIVIDER ──────────────────────────────────── */
+    .divider {
+      max-width: 960px;
+      margin: 0 auto;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    /* ─── KEY SECTIONS ─────────────────────────────── */
+    .features-section { padding: 4rem 1.5rem; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.1rem;
+    }
+
+    .feat-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 1.5rem;
+      padding: 1.6rem 1.4rem;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .feat-card::after {
+      content: attr(data-emoji);
+      position: absolute;
+      font-size: 5rem;
+      right: -0.5rem;
+      bottom: -0.8rem;
+      opacity: .06;
+      line-height: 1;
+    }
+    .feat-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(253,185,19,.15);
+    }
+
+    .feat-icon {
+      width: 44px; height: 44px;
+      background: var(--accent-bg);
+      border: 2px solid #e4d9f7;
+      border-radius: .9rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .feat-card h4 {
+      font-size: .95rem;
+      font-weight: 900;
+      color: var(--fg);
+      margin-bottom: .35rem;
+    }
+    .feat-card p {
+      font-size: .77rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ─── BOTTOM CTA STRIP ─────────────────────────── */
+    .cta-strip {
+      background: var(--primary);
+      margin: 0 1.5rem 3.5rem;
+      border-radius: 2rem;
+      max-width: 960px;
+      margin: 0 auto 3.5rem;
+      padding: 2.8rem 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-strip::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: .08;
+      right: -80px; top: -120px;
+    }
+
+    .cta-text { position: relative; z-index: 2; }
+    .cta-text h2 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--white);
+      margin-bottom: .4rem;
+    }
+    .cta-text p {
+      font-size: .85rem;
+      color: rgba(255,255,255,.6);
+    }
+
+    .cta-btn {
+      position: relative; z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      background: var(--gold);
+      color: var(--primary);
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 1rem 2.2rem;
+      border-radius: 999px;
+      text-decoration: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(253,185,19,.35);
+      transition: transform .18s, box-shadow .18s;
+    }
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(253,185,19,.5);
+    }
+    .cta-btn .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #16a34a;
+      animation: blink 1.4s infinite;
+    }
+
+    /* ─── FOOTER ───────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 0 1rem 3.5rem;
+    }
+
+    .footer-brand {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .3rem;
+    }
+
+    .footer-by {
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: .7;
+    }
+
+    .footer-name {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: -.01em;
+    }
+    .footer-name span { color: var(--gold); }
+
+    .footer-tel {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      margin-top: .45rem;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      opacity: .75;
+      transition: opacity .15s;
+    }
+    .footer-tel:hover { opacity: 1; }
+
+    /* ─── RESPONSIVE ────────────────────────────────── */
+    @media (max-width: 600px) {
+      .callout { grid-template-columns: 1fr; }
+      .callout-icon-wrap { display: none; }
+      .cta-strip { text-align: center; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ░░ HERO ░░ -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow"><span class="dot"></span> Prototype UX Overview</div>
+      <h1>Kingdom Arts<br><em>Academy</em></h1>
+      <p class="hero-sub">Botswana's premier music education platform — a multi-role interactive prototype showcasing courses, live ensemble, AI tools &amp; community features.</p>
+      <a class="hero-cta" href="https://pusetsokings.github.io/kingdomarts/" target="_blank">
+        <span class="live-dot"></span> Open Live Prototype
+      </a>
+    </div>
+  </section>
+
+  <!-- wave -->
+  <div class="wave">
+    <svg viewBox="0 0 1440 54" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,0 C360,54 1080,54 1440,0 L1440,0 L0,0 Z" fill="#faf8ff"/>
+    </svg>
+  </div>
+
+  <!-- ░░ VIEW AS CALLOUT ░░ -->
+  <section class="callout-section">
+    <div class="callout">
+      <div class="callout-icon-wrap">🎭</div>
+      <div>
+        <h3>The "View As" Button — Your Master Key</h3>
+        <p>Look for the role switcher fixed in the <strong style="color:#fff">bottom-right corner</strong> of the prototype screen. One click cycles between all four user types — navigation, dashboards, and permissions all update instantly with no login required.</p>
+        <span class="callout-chip">⚡ Switch roles live &nbsp;·&nbsp; No login required &nbsp;·&nbsp; 4 unique experiences</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ ROLES ░░ -->
+  <section class="roles-section">
+    <div class="wrap">
+      <p class="sec-label">User Roles — 4 perspectives, one platform</p>
+      <div class="roles-grid">
+
+        <div class="role-card rc-student">
+          <span class="role-pill">Student</span>
+          <h4>Full Learner Access</h4>
+          <ul>
+            <li>Home dashboard</li>
+            <li>Course catalog</li>
+            <li>Interactive lesson player</li>
+            <li>Community feed</li>
+            <li>Virtual Stage</li>
+            <li>AI Music Scanner</li>
+            <li>Messaging</li>
+            <li>Live Ensemble</li>
+          </ul>
+        </div>
+
+        <div class="role-card rc-guest">
+          <span class="role-pill">Guest</span>
+          <h4>Explore Mode</h4>
+          <ul>
+            <li>Explore the academy</li>
+            <li>Shadow live community</li>
+            <li>Watch Virtual Stage</li>
+            <li>Register prompt</li>
+          </ul>
+        </div>
+
+        <div class="role-card rc-instructor">
+          <span class="role-pill">Instructor</span>
+          <h4>Teacher Hub</h4>
+          <ul>
+            <li>Instructor dashboard</li>
+            <li>Upload lessons</li>
+            <li>Feedback review</li>
+            <li>Royalty statements</li>
+          </ul>
+        </div>
+
+        <div class="role-card rc-admin">
+          <span class="role-pill">Admin</span>
+          <h4>System Control</h4>
+          <ul>
+            <li>Admin dashboard</li>
+            <li>User management</li>
+            <li>Content approvals</li>
+            <li>Full system control</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap"><div class="divider"></div></div>
+
+  <!-- ░░ KEY SECTIONS ░░ -->
+  <section class="features-section">
+    <div class="wrap">
+      <p class="sec-label">Key Sections — what's inside</p>
+      <div class="features-grid">
+
+        <div class="feat-card" data-emoji="📚">
+          <div class="feat-icon">📚</div>
+          <h4>Courses</h4>
+          <p>Browse and filter by instrument or genre. Enroll directly into masterclasses.</p>
+        </div>
+
+        <div class="feat-card" data-emoji="🎹">
+          <div class="feat-icon">🎹</div>
+          <h4>Lesson Player</h4>
+          <p>Interactive lessons with a built-in metronome, tuner, and breath meter.</p>
+        </div>
+
+        <div class="feat-card" data-emoji="🎤">
+          <div class="feat-icon">🎤</div>
+          <h4>Virtual Stage</h4>
+          <p>Monthly student recitals and live performances streamed to audiences.</p>
+        </div>
+
+        <div class="feat-card" data-emoji="🤖">
+          <div class="feat-icon">🤖</div>
+          <h4>AI Music Scanner</h4>
+          <p>Upload sheet music and convert it to MIDI automatically.</p>
+        </div>
+
+        <div class="feat-card" data-emoji="🎻">
+          <div class="feat-icon">🎻</div>
+          <h4>Live Ensemble</h4>
+          <p>Group rehearsals via Jitsi video conferencing — real-time collaboration.</p>
+        </div>
+
+        <div class="feat-card" data-emoji="💬">
+          <div class="feat-icon">💬</div>
+          <h4>Community</h4>
+          <p>Social feed, duet lobby, and live activity stream for all members.</p>
+        </div>
+
+        <div class="feat-card" data-emoji="🏆">
+          <div class="feat-icon">🏆</div>
+          <h4>Hall of Fame</h4>
+          <p>Top student showcase celebrating achievement across all levels.</p>
+        </div>
+
+        <div class="feat-card" data-emoji="✉️">
+          <div class="feat-icon">✉️</div>
+          <h4>Messaging</h4>
+          <p>Internal messaging system for students, instructors, and staff.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ BOTTOM CTA ░░ -->
+  <div class="wrap" style="padding: 0 1.5rem 2.5rem;">
+    <div class="cta-strip">
+      <div class="cta-text">
+        <h2>Ready to explore?</h2>
+        <p>All data is mocked — no backend needed. Open the prototype and start switching roles.</p>
+      </div>
+      <a class="cta-btn" href="https://pusetsokings.github.io/kingdomarts/" target="_blank">
+        <span class="live-dot"></span> Launch Prototype
+      </a>
+    </div>
+  </div>
+
+  <!-- ░░ FOOTER ░░ -->
+  <footer>
+    <div class="footer-brand">
+      <span class="footer-by">Created by</span>
+      <span class="footer-name">Brandlytics<span>.</span>agency</span>
+      <a class="footer-tel" href="tel:71881185">📞 Tel: 71881185</a>
+    </div>
+  </footer>
+
+</body>
+</html>
