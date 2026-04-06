@@ -1,6 +1,7 @@
 import React from 'react';
-import { Award, Trophy, Star, Crown, Lock, ChevronRight, Zap, Target, Music } from 'lucide-react';
+import { Award, Trophy, Star, Crown, Lock, ChevronRight, Zap, Target, Music, Sun } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useAuth } from '@/app/stores/useAuthStore';
 
 export const Achievements = () => {
   const achievements = [
@@ -32,7 +33,7 @@ export const Achievements = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {achievements.map((item, i) => (
-          <motion.div 
+          <motion.div
             key={i}
             whileHover={{ y: -5 }}
             className={`p-8 rounded-3xl border transition-all relative overflow-hidden ${
@@ -85,36 +86,104 @@ export const Achievements = () => {
   );
 };
 
-export const Settings = () => (
-  <div className="p-6 lg:p-10 max-w-2xl mx-auto space-y-10">
-    <h1 className="text-4xl font-black tracking-tight">Settings</h1>
-    <div className="space-y-6">
-      <div className="p-6 bg-white border border-border rounded-3xl space-y-4">
-        <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Account Preferences</h3>
-        <div className="flex items-center justify-between p-4 bg-muted rounded-2xl">
-          <span className="text-sm font-bold">Email Notifications</span>
-          <div className="w-12 h-6 bg-primary rounded-full relative">
-            <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
-          </div>
-        </div>
-        <div className="flex items-center justify-between p-4 bg-muted rounded-2xl">
-          <span className="text-sm font-bold">Dark Mode</span>
-          <div className="w-12 h-6 bg-border rounded-full relative">
-            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full" />
-          </div>
-        </div>
+// Toggle component for settings
+function SettingToggle({ label, description, checked, onChange }: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      onClick={onChange}
+      className="w-full flex items-center justify-between p-4 bg-muted rounded-2xl hover:bg-muted/80 transition-colors text-left"
+    >
+      <div>
+        <p className="text-sm font-bold">{label}</p>
+        {description && <p className="text-xs text-muted-foreground font-medium mt-0.5">{description}</p>}
+      </div>
+      <div
+        className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${checked ? 'bg-primary' : 'bg-border'}`}
+      >
+        <div
+          className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${checked ? 'right-1' : 'left-1'}`}
+        />
+      </div>
+    </button>
+  );
+}
+
+export const Settings = () => {
+  const { state: authState } = useAuth();
+  const user = authState.user;
+
+  return (
+    <div className="p-6 lg:p-10 max-w-2xl mx-auto space-y-10">
+      <div>
+        <h1 className="text-4xl font-black tracking-tight mb-2">Settings</h1>
+        <p className="text-muted-foreground font-medium">Manage your Academy preferences and account.</p>
       </div>
 
-      <div className="p-6 bg-white border border-border rounded-3xl space-y-4">
-        <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Privacy & Security</h3>
-        <button className="w-full text-left p-4 hover:bg-muted rounded-2xl transition-colors font-bold text-sm">Change Password</button>
-        <button className="w-full text-left p-4 hover:bg-muted rounded-2xl transition-colors font-bold text-sm">Privacy Settings</button>
-      </div>
+      <div className="space-y-6">
+        {/* Account Preferences */}
+        <div className="p-6 bg-white border border-border rounded-3xl space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Account Preferences</h3>
+          <SettingToggle
+            label="Email Notifications"
+            description="Receive updates about lessons, live sessions and community"
+            checked={true}
+            onChange={() => {}}
+          />
+          <SettingToggle
+            label="Live Lesson Alerts"
+            description="Get notified when an instructor invites you to a live session"
+            checked={true}
+            onChange={() => {}}
+          />
+          <SettingToggle
+            label="Community Digest"
+            description="Weekly highlights from the Academy community feed"
+            checked={false}
+            onChange={() => {}}
+          />
+        </div>
 
-      <button className="w-full py-4 bg-red-50 text-red-600 rounded-3xl font-black uppercase tracking-widest text-xs hover:bg-red-100 transition-colors">Deactivate Account</button>
+        {/* Appearance */}
+        <div className="p-6 bg-white border border-border rounded-3xl">
+          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Appearance</h3>
+          <div className="flex items-center gap-4 p-5 bg-primary/5 border-2 border-primary rounded-2xl">
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border">
+              <Sun className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-black text-primary">Light Mode</p>
+              <p className="text-xs text-muted-foreground font-medium">Kingdom Arts Academy — brand light theme</p>
+            </div>
+            <span className="text-[9px] font-black uppercase tracking-widest text-primary bg-secondary/30 px-2.5 py-1 rounded-full">Active</span>
+          </div>
+        </div>
+
+        {/* Privacy & Security */}
+        <div className="p-6 bg-white border border-border rounded-3xl space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Privacy & Security</h3>
+          <button className="w-full text-left p-4 hover:bg-muted rounded-2xl transition-colors font-bold text-sm flex items-center justify-between">
+            Change Password <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button className="w-full text-left p-4 hover:bg-muted rounded-2xl transition-colors font-bold text-sm flex items-center justify-between">
+            Privacy Settings <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button className="w-full text-left p-4 hover:bg-muted rounded-2xl transition-colors font-bold text-sm flex items-center justify-between">
+            Connected Devices <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <button className="w-full py-4 bg-red-50 text-red-600 rounded-3xl font-black uppercase tracking-widest text-xs hover:bg-red-100 transition-colors">
+          Deactivate Account
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export const Support = () => (
   <div className="p-6 lg:p-10 max-w-4xl mx-auto space-y-12">

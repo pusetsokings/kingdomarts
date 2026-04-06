@@ -1,0 +1,17 @@
+@import './tailwind.css';
+@import './theme.css';
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)];
+  }
+  .glass-button {
+    @apply bg-white/20 hover:bg-white/30 backdrop-blur-md transition-all active:scale-95 text-white/90;
+  }
+  .premium-gradient {
+    @apply bg-gradient-to-br from-primary via-primary/80 to-secondary/50;
+  }
+  .premium-text-gradient {
+    @apply bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent;
+  }
+}

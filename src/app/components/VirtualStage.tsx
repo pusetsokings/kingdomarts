@@ -2,20 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Play, Users, Crown, Star, Calendar, Music, Video, Share2, Heart, Award, Trophy, MessageSquare, Flame, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
+import { useRealtime } from '@/app/contexts/RealtimeContext';
 
 export const VirtualStage = () => {
+  const { data } = useRealtime();
   const [activeTab, setActiveTab] = useState<'live' | 'upcoming'>('live');
 
   const livePerformers = [
-    { name: 'Lerato Molefe', instrument: 'Piano', viewers: 124, piece: 'Gaborone Sunset Waltz', streak: 42 },
+    { name: 'Lerato Molefe', instrument: 'Saxophone', viewers: 124, piece: 'Jazz on Luthuli', streak: 42 },
     { name: 'Kabo Letsholo', instrument: 'Setinkane', viewers: 89, piece: 'Desert Rain Rhythms', streak: 15 },
   ];
 
   const upcomingRecitals = [
-    { name: 'Mothusi Segokgo', instrument: 'Guitar', date: 'Feb 15, 2026', time: '18:00 CAT', piece: 'Kalahari Blues', level: 7 },
+    { name: 'Mothusi Segokgo', instrument: 'Saxophone', date: 'Feb 15, 2026', time: '18:00 CAT', piece: 'Kalahari Blues', level: 7 },
     { name: 'Amantle Kenosi', instrument: 'Piano', date: 'Feb 18, 2026', time: '16:30 CAT', piece: 'Okavango Serenade', level: 9 },
     { name: 'Tebogo Modise', instrument: 'Drums', date: 'Feb 22, 2026', time: '19:00 CAT', piece: 'Moshito wa Botswana', level: 6 },
-    { name: 'Lesedi Phiri', instrument: 'Saxophone', date: 'Feb 25, 2026', time: '17:45 CAT', piece: 'Jazz on Luthuli', level: 8 },
+    { name: 'Lesedi Phiri', instrument: 'Saxophone', date: 'Feb 25, 2026', time: '17:45 CAT', piece: 'Jazz on Luthuli 2', level: 8 },
   ];
 
   return (
@@ -36,12 +38,11 @@ export const VirtualStage = () => {
         </div>
         <div className="flex bg-muted p-1.5 rounded-2xl border border-border">
           {['live', 'upcoming'].map((tab) => (
-            <button 
+            <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                activeTab === tab ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-primary'
-              }`}
+              className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-primary'
+                }`}
             >
               {tab.replace('-', ' ')}
             </button>
@@ -51,7 +52,7 @@ export const VirtualStage = () => {
 
       <AnimatePresence mode="wait">
         {activeTab === 'live' && (
-          <motion.div 
+          <motion.div
             key="live"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -61,22 +62,22 @@ export const VirtualStage = () => {
             {/* Featured Live Stream */}
             <div className="xl:col-span-2 space-y-6">
               <div className="aspect-video bg-black rounded-[3rem] overflow-hidden relative shadow-2xl border-8 border-primary group">
-                <img 
-                  src="https://images.unsplash.com/photo-1514320298574-255c5df03df8?auto=format&fit=crop&w=1200&q=80" 
-                  className="w-full h-full object-cover opacity-60" 
+                <img
+                  src="https://images.unsplash.com/photo-1578912996919-482f3ef7f052?auto=format&fit=crop&w=1200&q=80"
+                  className="w-full h-full object-cover opacity-60"
                   alt="Live Recital"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
-                
+
                 {/* Overlay Controls */}
                 <div className="absolute top-8 left-8 flex items-center gap-3">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">
                     <div className="w-2 h-2 bg-white rounded-full animate-ping" />
                     Live Recital
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md text-white rounded-lg text-[10px] font-black uppercase tracking-widest">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md text-white rounded-lg text-[10px] font-black uppercase tracking-widest border border-white/10">
                     <Users className="w-3 h-3" />
-                    {livePerformers[0].viewers} Watching
+                    {data.activeUsers} Watching
                   </div>
                 </div>
 
@@ -146,7 +147,7 @@ export const VirtualStage = () => {
                     </div>
                   </div>
                 ))}
-                
+
                 <div className="p-8 bg-primary text-white rounded-[2.5rem] relative overflow-hidden shadow-xl mt-8">
                   <div className="relative z-10">
                     <h5 className="font-black text-xl mb-2">Perform Next Month</h5>
@@ -163,7 +164,7 @@ export const VirtualStage = () => {
         )}
 
         {activeTab === 'upcoming' && (
-          <motion.div 
+          <motion.div
             key="upcoming"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

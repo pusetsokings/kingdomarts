@@ -1,6 +1,7 @@
 import React from 'react';
-import { Play, Heart, MessageCircle, Share2, Music } from 'lucide-react';
+import { Play, Heart, MessageCircle, Share2, Music, Users } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useRealtime } from '@/app/contexts/RealtimeContext';
 
 interface StudentPerformance {
   id: string;
@@ -47,9 +48,11 @@ const performances: StudentPerformance[] = [
 ];
 
 export const StudentShowcase = () => {
+  const { data } = useRealtime();
+
   return (
     <section className="py-12">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
             <motion.div
@@ -60,7 +63,12 @@ export const StudentShowcase = () => {
             </motion.div>
             Student Showcase
           </h2>
-          <p className="text-muted-foreground font-medium">Spotlight on our academy's rising stars from Botswana</p>
+          <p className="text-muted-foreground font-medium flex items-center gap-3 mt-2">
+            Spotlight on our academy's rising stars
+            <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full">
+              <Users className="w-3 h-3" /> {data.activeUsers} Online Now
+            </span>
+          </p>
         </div>
         <button className="text-xs font-black uppercase tracking-widest text-primary hover:text-secondary transition-colors underline decoration-2 underline-offset-4">
           View Gallery
@@ -74,13 +82,13 @@ export const StudentShowcase = () => {
             whileHover={{ y: -8 }}
             className="group relative rounded-2xl overflow-hidden shadow-lg aspect-[3/4] cursor-pointer"
           >
-            <img 
-              src={perf.thumbnail} 
+            <img
+              src={perf.thumbnail}
               alt={perf.studentName}
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-            
+
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-primary-foreground shadow-2xl">
                 <Play className="w-8 h-8 fill-current ml-1" />
@@ -92,7 +100,7 @@ export const StudentShowcase = () => {
                 {perf.instrument}
               </span>
               <h4 className="font-bold text-lg mb-3">{perf.studentName}</h4>
-              
+
               <div className="flex items-center gap-4 opacity-80">
                 <div className="flex items-center gap-1 text-[10px] font-bold">
                   <Heart className="w-3 h-3" /> {perf.likes}

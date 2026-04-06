@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kingdom Arts Agency — Live Preview</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#522d80',
+            secondary: '#fdb913',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(8px);} to { opacity:1; transform:translateY(0);} }
+    .slide-in { animation: slideIn 0.25s ease forwards; }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+
+<script type="text/babel">
+const { useState } = React;
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+const PURPLE = '#522d80';
+const GOLD   = '#fdb913';
+
+const ROLES = [
+  { id:'musician',     label:'Musician',          desc:'Browse gigs, apply, manage your career' },
+  { id:'client',       label:'Client / Promoter', desc:'Find talent, post gigs, manage bookings' },
+  { id:'agency_admin', label:'Agency Admin',       desc:'Manage roster, bookings, and operations' },
+  { id:'guest',        label:'Browse as Guest',    desc:'Explore without signing in' },
+];
+
+const JOBS = [
+  { id:'j1', title:'Resident Guitarist — MSC Cruise Lines',         cat:'Cruise Ship',     loc:'Mediterranean',      rate:'USD 3,200/mo',  instruments:['Guitar'],            lvl:6, applicants:12, slots:2, date:'01 Jul 2026', client:'MSC Cruises',        applied:true  },
+  { id:'j2', title:'Keyboardist — Botswana International Music Fest',cat:'Concert/Festival',loc:'Gaborone, Botswana', rate:'BWP 8,000/proj',instruments:['Piano','Keyboard'],  lvl:5, applicants:7,  slots:1, date:'15 May 2026', client:'BIMF Committee',     applied:false },
+  { id:'j3', title:'Session Violinist — Film Score Recording',       cat:'Movie Project',   loc:'Gaborone Studios',   rate:'BWP 2,500/day', instruments:['Violin'],            lvl:7, applicants:4,  slots:3, date:'20 Apr 2026', client:'Zebra Film Prod.',   applied:false },
+  { id:'j4', title:'Drummer — The Savanna Band (Touring)',           cat:'Band',            loc:'Southern Africa',    rate:'BWP 15,000/mo', instruments:['Drums'],             lvl:5, applicants:9,  slots:1, date:'01 Jun 2026', client:'The Savanna Band',   applied:false },
+  { id:'j5', title:'Jazz Pianist — The Grand Palm Hotel',            cat:'Stable',          loc:'Grand Palm, Gaborone',rate:'BWP 6,000/mo',instruments:['Piano'],              lvl:6, applicants:5,  slots:1, date:'01 Apr 2026', client:'Grand Palm Hotel',   applied:false },
+  { id:'j6', title:'Backing Vocalist — Studio Album Recording',      cat:'Live Recording',  loc:'Francistown Studio', rate:'BWP 1,800/day', instruments:['Voice'],             lvl:4, applicants:11, slots:4, date:'10 Apr 2026', client:'Mpho Tau Music',     applied:false },
+];
+
+const MUSICIANS = [
+  { id:'m1', name:'Kagiso Sithole',  instruments:['Guitar'],          genres:['Jazz','Afrobeat'],  lvl:7, cert:'KAA Certified', avail:'available', gigs:14, rating:4.9, loc:'Gaborone'    },
+  { id:'m2', name:'Naledi Moremi',   instruments:['Piano','Keyboard'],genres:['Jazz','Blues'],      lvl:8, cert:'KAA Certified', avail:'available', gigs:22, rating:5.0, loc:'Gaborone'    },
+  { id:'m3', name:'Tebogo Nkosi',    instruments:['Drums'],           genres:['Afrobeat','Reggae'], lvl:6, cert:'Ext. Certified',avail:'on-gig',    gigs:9,  rating:4.7, loc:'Francistown' },
+  { id:'m4', name:'Mpho Tau',        instruments:['Voice'],           genres:['Gospel','Afropop'],  lvl:5, cert:'KAA Certified', avail:'available', gigs:6,  rating:4.8, loc:'Gaborone'    },
+  { id:'m5', name:'Kefilwe Ditheko', instruments:['Violin','Viola'],  genres:['Classical'],         lvl:9, cert:'Ext. Certified',avail:'available', gigs:31, rating:5.0, loc:'Gaborone'    },
+  { id:'m6', name:'Lerato Kgosi',    instruments:['Bass Guitar'],     genres:['Jazz','Funk'],       lvl:6, cert:'KAA Certified', avail:'booked',    gigs:11, rating:4.6, loc:'Maun'        },
+];
+
+const CAT_COLORS = {
+  'Cruise Ship':     'bg-blue-100 text-blue-700',
+  'Band':            'bg-purple-100 text-purple-700',
+  'Concert/Festival':'bg-orange-100 text-orange-700',
+  'Stable':          'bg-green-100 text-green-700',
+  'Movie Project':   'bg-red-100 text-red-700',
+  'Live Recording':  'bg-yellow-100 text-yellow-700',
+  'Other':           'bg-gray-100 text-gray-700',
+};
+
+const AVAIL_COLORS = { available:'bg-green-100 text-green-700', booked:'bg-yellow-100 text-yellow-700', 'on-gig':'bg-blue-100 text-blue-700' };
+const AVAIL_LABELS = { available:'Available', booked:'Booked', 'on-gig':'On Gig' };
+
+// ─── Login Screen ────────────────────────────────────────────────────────────
+function LoginScreen({ onLogin }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{background:PURPLE}}>
+      <div className="w-full max-w-lg">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl" style={{background:GOLD}}>
+            <span className="text-2xl font-black" style={{color:PURPLE}}>KA</span>
+          </div>
+          <h1 className="text-3xl font-black text-white mb-2">Kingdom Arts Agency</h1>
+          <p className="text-white/60 text-sm">Botswana's Premier Musician Placement Agency</p>
+          <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest" style={{background:'rgba(255,255,255,0.1)',color:GOLD}}>
+            Select your role to continue
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {ROLES.map(r => (
+            <button key={r.id} onClick={() => onLogin(r.id)}
+              className="text-left p-5 rounded-2xl border border-white/20 hover:bg-white/20 transition-all group"
+              style={{background:'rgba(255,255,255,0.08)'}}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 font-black text-xs" style={{background: r.id==='musician'?PURPLE: r.id==='client'?GOLD: r.id==='agency_admin'?'#111':'rgba(255,255,255,0.15)', color: r.id==='client'?PURPLE:'white'}}>
+                {r.id==='musician'?'🎸':r.id==='client'?'🏢':r.id==='agency_admin'?'⚙️':'👁️'}
+              </div>
+              <p className="text-sm font-black text-white">{r.label}</p>
+              <p className="text-xs text-white/50 mt-1 leading-relaxed">{r.desc}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Navbar ──────────────────────────────────────────────────────────────────
+function Navbar({ role, view, setView, setShowLogin }) {
+  const names = { musician:'Kagiso Sithole', client:'Thabo Enterprises', agency_admin:'KA Admin', guest:'Guest' };
+  return (
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={()=>setView('home')}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg" style={{background:PURPLE}}>
+            <span className="text-xs font-black" style={{color:GOLD}}>KA</span>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest" style={{color:'rgba(82,45,128,0.5)'}}>Kingdom Arts</p>
+            <p className="text-sm font-black" style={{color:PURPLE}}>Agency</p>
+          </div>
+        </div>
+
+        <nav className="hidden md:flex items-center gap-1 rounded-2xl p-1 bg-gray-100">
+          {[{id:'home',label:'Home'},{id:'job-board',label:'Job Board'},{id:'musicians',label:'Find Musicians'}].map(item=>(
+            <button key={item.id} onClick={()=>setView(item.id)}
+              className="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+              style={view===item.id?{background:PURPLE,color:'white',boxShadow:`0 4px 12px rgba(82,45,128,0.3)`}:{color:'#666'}}>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <a href="https://school.kingdomarts.org.bw" target="_blank"
+            className="hidden sm:flex items-center gap-1.5 text-xs font-black uppercase tracking-widest border border-gray-200 hover:border-purple-300 px-3 py-2 rounded-xl transition-all text-gray-500 hover:text-purple-700">
+            🎓 Academy
+          </a>
+          {role !== 'guest' ? (
+            <button onClick={()=>setView('profile')} className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-2xl bg-gray-100 hover:bg-purple-50 transition-colors">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-black" style={{background:PURPLE}}>
+                {names[role]?.[0]}
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-black" style={{color:PURPLE}}>{names[role]?.split(' ')[0]}</p>
+                <p className="text-xs text-gray-400">{role.replace('_',' ')}</p>
+              </div>
+            </button>
+          ) : (
+            <button onClick={()=>setShowLogin(true)}
+              className="text-white font-black uppercase tracking-widest text-xs px-5 py-2.5 rounded-xl shadow-lg transition-colors"
+              style={{background:PURPLE}}>
+              Sign In
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+function Sidebar({ role, view, setView, setShowLogin }) {
+  const menus = {
+    musician:     [{id:'home',e:'📊',l:'My Dashboard'},{id:'job-board',e:'💼',l:'Job Board'},{id:'my-applications',e:'📋',l:'Applications'},{id:'my-bookings',e:'📖',l:'My Bookings'},{id:'earnings',e:'💰',l:'Earnings'},{id:'messages',e:'💬',l:'Messages'},{id:'profile',e:'👤',l:'My Profile'}],
+    client:       [{id:'home',e:'📊',l:'Dashboard'},{id:'musicians',e:'👥',l:'Find Musicians'},{id:'my-requests',e:'📋',l:'My Requests'},{id:'my-bookings',e:'📖',l:'My Bookings'},{id:'messages',e:'💬',l:'Messages'}],
+    agency_admin: [{id:'home',e:'📈',l:'Analytics'},{id:'talent-roster',e:'👥',l:'Talent Roster'},{id:'job-listings',e:'💼',l:'Job Listings'},{id:'applications-queue',e:'📋',l:'Applications'},{id:'bookings-manage',e:'📖',l:'Bookings'},{id:'client-directory',e:'🌐',l:'Clients'},{id:'payments',e:'💰',l:'Payments'}],
+    guest:        [{id:'home',e:'🌐',l:'Explore Agency'},{id:'job-board',e:'💼',l:'Browse Jobs'},{id:'musicians',e:'👥',l:'Find Musicians'}],
+  };
+  const items = menus[role] || menus.guest;
+
+  return (
+    <aside className="hidden lg:flex flex-col w-60 border-r border-gray-100 bg-white sticky top-16 h-[calc(100vh-4rem)]">
+      {/* User card */}
+      <div className="p-4 border-b border-gray-100">
+        <div className="flex items-center gap-3 p-3 rounded-2xl" style={{background:'#f8f4ff'}}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black" style={{background:PURPLE}}>
+            {role==='musician'?'🎸':role==='client'?'🏢':role==='agency_admin'?'⚙️':'👁️'}
+          </div>
+          <div>
+            <p className="text-xs font-black" style={{color:PURPLE}}>{role==='musician'?'Kagiso Sithole':role==='client'?'Thabo Ent.':role==='agency_admin'?'KA Admin':'Guest'}</p>
+            <p className="text-xs text-gray-400 capitalize">{role.replace('_',' ')}</p>
+            {role==='musician'&&<p className="text-xs font-black mt-0.5" style={{color:GOLD}}>★ KAA Certified</p>}
+          </div>
+        </div>
+        {role==='musician'&&(
+          <div className="mt-3 px-1">
+            <div className="flex justify-between mb-1">
+              <span className="text-xs font-black text-gray-400">Level 7</span>
+              <span className="text-xs text-gray-400">3400/5000 XP</span>
+            </div>
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full rounded-full" style={{width:'68%',background:`linear-gradient(90deg,${PURPLE},${GOLD})`}}/>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        {items.map(item=>(
+          <button key={item.id} onClick={()=>setView(item.id)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left"
+            style={view===item.id?{background:PURPLE,color:'white',boxShadow:`0 4px 12px rgba(82,45,128,0.25)`,fontWeight:900}:{color:'#666'}}>
+            <span className="text-sm">{item.e}</span>
+            <span className="text-xs font-black uppercase tracking-widest">{item.l}</span>
+            {view===item.id&&<span className="ml-auto text-yellow-400 text-xs">›</span>}
+          </button>
+        ))}
+      </nav>
+
+      <div className="p-3 border-t border-gray-100 space-y-0.5">
+        <button onClick={()=>setView('settings')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 transition-all">
+          <span>⚙️</span><span className="text-xs font-black uppercase tracking-widest">Settings</span>
+        </button>
+        {role!=='guest'&&(
+          <button onClick={()=>setShowLogin(true)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 transition-all">
+            <span>↩️</span><span className="text-xs font-black uppercase tracking-widest">Switch Account</span>
+          </button>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+// ─── Dashboards ───────────────────────────────────────────────────────────────
+function MusicianDashboard({ setView }) {
+  const earningsData = [2800,4200,3600,5100,4800,6200];
+  const months = ['Oct','Nov','Dec','Jan','Feb','Mar'];
+  const max = Math.max(...earningsData);
+  return (
+    <div className="p-6 lg:p-10 space-y-8 slide-in">
+      <div className="p-8 rounded-3xl text-white relative overflow-hidden" style={{background:PURPLE}}>
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black uppercase tracking-widest mb-3" style={{background:GOLD,color:PURPLE}}>✨ Welcome back</div>
+            <h1 className="text-2xl font-black">Hi, Kagiso 👋</h1>
+            <p className="text-white/60 text-sm mt-1">You have 6 gigs waiting for you</p>
+          </div>
+          <div className="flex gap-3">
+            <div className="rounded-2xl p-4 text-center" style={{background:'rgba(255,255,255,0.12)'}}>
+              <p className="text-2xl font-black" style={{color:GOLD}}>7</p>
+              <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-0.5">Level</p>
+            </div>
+            <div className="rounded-2xl p-4 text-center" style={{background:'rgba(255,255,255,0.12)'}}>
+              <p className="text-2xl font-black" style={{color:GOLD}}>14</p>
+              <p className="text-xs font-black uppercase tracking-widest text-white/60 mt-0.5">Gigs</p>
+            </div>
+          </div>
+        </div>
+        <div className="absolute -bottom-8 -right-8 text-8xl opacity-5">🎸</div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[{e:'💼',l:'Open Gigs',v:6,bg:'#f8f4ff',c:PURPLE},{e:'⏳',l:'Applications',v:2,bg:'#fff7ed',c:'#c2410c'},{e:'✅',l:'Bookings',v:2,bg:'#f0fdf4',c:'#16a34a'},{e:'⭐',l:'My Rating',v:'4.9★',bg:'#fffbeb',c:'#d97706'}].map(s=>(
+          <div key={s.l} className="bg-white border-2 border-gray-100 rounded-2xl p-5" style={{borderColor:'rgba(82,45,128,0.06)'}}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-3" style={{background:s.bg}}>{s.e}</div>
+            <p className="text-2xl font-black" style={{color:s.c}}>{s.v}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-gray-400 mt-0.5">{s.l}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white border-2 border-gray-100 rounded-2xl p-6" style={{borderColor:'rgba(82,45,128,0.08)'}}>
+          <div className="flex justify-between mb-6">
+            <div>
+              <h3 className="font-black text-gray-900">Earnings Overview</h3>
+              <p className="text-xs text-gray-400">Last 6 months · BWP</p>
+            </div>
+            <p className="text-2xl font-black" style={{color:PURPLE}}>BWP 26,700</p>
+          </div>
+          <div className="flex items-end gap-2 h-36">
+            {earningsData.map((v,i)=>(
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full rounded-t-lg transition-all hover:opacity-80" style={{height:`${(v/max)*120}px`,background:PURPLE}}/>
+                <span className="text-xs text-gray-400 font-bold">{months[i]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <h3 className="font-black text-sm uppercase tracking-widest text-gray-900">Quick Actions</h3>
+          {[{l:'Browse Job Board',e:'💼',v:'job-board',bg:PURPLE,tc:'white'},{l:'My Applications',e:'⏳',v:'my-applications',bg:GOLD,tc:PURPLE},{l:'Update Profile',e:'⭐',v:'profile',bg:'#f8f4ff',tc:PURPLE},{l:'View Earnings',e:'💰',v:'earnings',bg:'#f4f4f4',tc:'#111'}].map(a=>(
+            <button key={a.v} onClick={()=>setView(a.v)} className="w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all hover:opacity-90" style={{background:a.bg,color:a.tc}}>
+              <div className="flex items-center gap-3">
+                <span>{a.e}</span>
+                <span className="text-xs font-black uppercase tracking-widest">{a.l}</span>
+              </div>
+              <span>›</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboard({ setView }) {
+  const gigData = [{n:'Cruise',v:4},{n:'Concert',v:8},{n:'Recording',v:6},{n:'Band',v:3},{n:'Hotel',v:5},{n:'Film',v:2}];
+  const max = Math.max(...gigData.map(d=>d.v));
+  return (
+    <div className="p-6 lg:p-10 space-y-8 slide-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black" style={{color:PURPLE}}>Agency Analytics</h1>
+          <p className="text-gray-400 text-sm mt-1">Kingdom Arts Agency · March 2026</p>
+        </div>
+        <div className="text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl" style={{background:GOLD,color:PURPLE}}>Admin View</div>
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[{e:'👥',l:'Musicians',v:6,sub:'+2 this month',bg:'#f8f4ff',c:PURPLE},{e:'💼',l:'Open Gigs',v:6,sub:'3 closing soon',bg:'#fff7ed',c:'#c2410c'},{e:'⏳',l:'Applications',v:2,sub:'4 need review',bg:'#eff6ff',c:'#1d4ed8'},{e:'📈',l:'Active Bookings',v:1,sub:'5 available',bg:'#f0fdf4',c:'#16a34a'}].map(s=>(
+          <div key={s.l} className="bg-white border-2 rounded-2xl p-5" style={{borderColor:'rgba(82,45,128,0.06)'}}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-3" style={{background:s.bg}}>{s.e}</div>
+            <p className="text-2xl font-black" style={{color:s.c}}>{s.v}</p>
+            <p className="text-xs font-black uppercase tracking-widest text-gray-400">{s.l}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{s.sub}</p>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white border-2 rounded-2xl p-6" style={{borderColor:'rgba(82,45,128,0.08)'}}>
+          <h3 className="font-black text-gray-900 mb-1">Bookings by Category</h3>
+          <p className="text-xs text-gray-400 mb-6">This financial year</p>
+          <div className="flex items-end gap-3 h-36">
+            {gigData.map((d,i)=>(
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full rounded-t-lg hover:opacity-80 transition-all" style={{height:`${(d.v/max)*120}px`,background:GOLD}}/>
+                <span className="text-xs text-gray-400 font-bold">{d.n}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <h3 className="font-black text-sm uppercase tracking-widest">Manage</h3>
+          {[{l:'Talent Roster',e:'👥',v:'talent-roster',bg:PURPLE,tc:'white'},{l:'Applications Queue',e:'⏳',v:'applications-queue',bg:GOLD,tc:PURPLE},{l:'Job Listings',e:'💼',v:'job-listings',bg:'#f8f4ff',tc:PURPLE},{l:'Client Directory',e:'🌐',v:'client-directory',bg:'#f4f4f4',tc:'#111'}].map(a=>(
+            <button key={a.v} onClick={()=>setView(a.v)} className="w-full flex items-center justify-between px-5 py-4 rounded-2xl transition-all hover:opacity-90" style={{background:a.bg,color:a.tc}}>
+              <div className="flex items-center gap-3"><span>{a.e}</span><span className="text-xs font-black uppercase tracking-widest">{a.l}</span></div>
+              <span>›</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuestExplore({ setView, setShowLogin }) {
+  return (
+    <div className="p-6 lg:p-10 space-y-12 slide-in">
+      <div className="p-10 rounded-3xl text-white relative overflow-hidden" style={{background:PURPLE}}>
+        <div className="max-w-lg relative z-10">
+          <div className="flex items-center gap-2 mb-4" style={{color:GOLD}}>
+            <span>✨</span><span className="text-xs font-black uppercase tracking-widest">Botswana's Premier Music Agency</span>
+          </div>
+          <h2 className="text-3xl font-black mb-4 leading-tight">Connecting World-Class Musicians with Global Opportunities</h2>
+          <p className="text-white/70 mb-8">Cruise ships, concerts, film scores, and more. Certified talent, professional placements.</p>
+          <div className="flex flex-wrap gap-4">
+            <button onClick={()=>setShowLogin(true)} className="font-black uppercase tracking-widest text-xs px-8 py-4 rounded-xl shadow-xl" style={{background:GOLD,color:PURPLE}}>Join the Agency</button>
+            <button onClick={()=>setView('job-board')} className="font-black uppercase tracking-widest text-xs px-8 py-4 rounded-xl border text-white border-white/30" style={{background:'rgba(255,255,255,0.1)'}}>Browse Gigs</button>
+          </div>
+        </div>
+        <div className="absolute -bottom-10 -right-10 text-9xl opacity-5">🎵</div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[{e:'👥',l:'6+ Musicians',d:'Certified, auditioned, and ready for professional bookings.'},{e:'💼',l:'6 Active Gigs',d:'From cruise ships to film studios — real opportunities posted weekly.'},{e:'🌐',l:'International Reach',d:'Placements across Africa, Europe, and beyond.'}].map(c=>(
+          <div key={c.l} className="bg-white border-4 p-8 rounded-3xl space-y-4" style={{borderColor:'rgba(82,45,128,0.1)'}}>
+            <div className="text-4xl">{c.e}</div>
+            <h3 className="text-xl font-black">{c.l}</h3>
+            <p className="text-gray-500 text-sm">{c.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Job Board ────────────────────────────────────────────────────────────────
+function JobBoard({ role }) {
+  const [search, setSearch] = useState('');
+  const [cat, setCat] = useState('All');
+  const [applied, setApplied] = useState(['j1']);
+  const cats = ['All','Cruise Ship','Band','Concert/Festival','Stable','Movie Project','Live Recording'];
+  const filtered = JOBS.filter(j=>{
+    const ms = j.title.toLowerCase().includes(search.toLowerCase())||j.instruments.some(i=>i.toLowerCase().includes(search.toLowerCase()));
+    const mc = cat==='All'||j.cat===cat;
+    return ms&&mc;
+  });
+  return (
+    <div className="p-6 lg:p-10 space-y-8 slide-in">
+      <div className="p-8 rounded-3xl text-white relative overflow-hidden" style={{background:PURPLE}}>
+        <div className="relative z-10 max-w-lg">
+          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-black uppercase tracking-widest mb-4" style={{background:GOLD,color:PURPLE}}>💼 Live Opportunities</div>
+          <h1 className="text-3xl font-black mb-2">Find Your Next Gig</h1>
+          <p className="text-white/70 text-sm">Cruise ships, concerts, studios, and more.</p>
+        </div>
+        <div className="absolute -bottom-6 -right-6 text-8xl opacity-5">💼</div>
+      </div>
+      <div className="relative">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by title, instrument, location..." className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-100 border border-gray-200 text-sm focus:outline-none focus:border-purple-300" style={{fontFamily:'Inter'}}/>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {cats.map(c=>(
+          <button key={c} onClick={()=>setCat(c)} className="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all" style={cat===c?{background:PURPLE,color:'white',boxShadow:`0 4px 12px rgba(82,45,128,0.3)`}:{background:'#f4f4f4',color:'#666'}}>{c}</button>
+        ))}
+      </div>
+      <p className="text-xs font-black uppercase tracking-widest text-gray-400">{filtered.length} opportunities</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filtered.map(job=>{
+          const isApplied = applied.includes(job.id);
+          return (
+            <div key={job.id} className="bg-white border-2 rounded-2xl overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer" style={{borderColor:'rgba(82,45,128,0.08)'}}>
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gray-100">{job.cat==='Cruise Ship'?'🚢':job.cat==='Band'?'🎸':job.cat==='Concert/Festival'?'🎤':job.cat==='Stable'?'🏨':job.cat==='Movie Project'?'🎬':job.cat==='Live Recording'?'🎙️':'🎵'}</div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-400">{job.client}</p>
+                      <span className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${CAT_COLORS[job.cat]||'bg-gray-100 text-gray-700'}`}>{job.cat}</span>
+                    </div>
+                  </div>
+                  {isApplied&&<span className="bg-green-100 text-green-700 text-xs font-black uppercase tracking-widest px-2 py-1 rounded-full">Applied</span>}
+                </div>
+                <h3 className="font-black text-sm leading-tight mb-3">{job.title}</h3>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <span className="text-xs text-gray-400">📍 {job.loc.split(',')[0]}</span>
+                  <span className="text-xs text-gray-400">💰 {job.rate}</span>
+                  <span className="text-xs text-gray-400">📅 {job.date}</span>
+                  <span className="text-xs text-gray-400">👥 {job.applicants} applicants</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-1">{job.instruments.slice(0,2).map(i=><span key={i} className="text-xs font-black px-2 py-1 rounded-lg" style={{background:'#f8f4ff',color:PURPLE}}>{i}</span>)}</div>
+                  <button onClick={()=>!isApplied&&setApplied(p=>[...p,job.id])} className="text-xs font-black px-4 py-2 rounded-xl transition-all" style={isApplied?{background:'#f0fdf4',color:'#16a34a'}:{background:PURPLE,color:'white',boxShadow:`0 4px 8px rgba(82,45,128,0.3)`}}>
+                    {isApplied?'✓ Applied':'Apply'}
+                  </button>
+                </div>
+              </div>
+              <div className="px-5 py-3 flex items-center justify-between" style={{background:'rgba(244,244,244,0.5)'}}>
+                <span className="text-xs text-gray-400">Level {job.lvl}+ required</span>
+                <span className="text-xs font-black uppercase tracking-widest text-gray-400">{job.slots} slot{job.slots>1?'s':''}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Talent Roster ────────────────────────────────────────────────────────────
+function TalentRoster({ isClient }) {
+  const [search, setSearch] = useState('');
+  const filtered = MUSICIANS.filter(m=>m.name.toLowerCase().includes(search.toLowerCase())||m.instruments.some(i=>i.toLowerCase().includes(search.toLowerCase())));
+  return (
+    <div className="p-6 lg:p-10 space-y-8 slide-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black" style={{color:PURPLE}}>{isClient?'Find Musicians':'Talent Roster'}</h1>
+          <p className="text-gray-400 text-sm mt-1">{MUSICIANS.length} certified musicians</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-2xl" style={{background:'#f8f4ff',border:'1px solid rgba(82,45,128,0.1)'}}>
+          <span>✅</span><span className="text-xs font-black" style={{color:PURPLE}}>{MUSICIANS.filter(m=>m.cert!=='pending').length} Certified</span>
+        </div>
+      </div>
+      <div className="relative">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name, instrument, genre..." className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-100 border border-gray-200 text-sm focus:outline-none" style={{fontFamily:'Inter'}}/>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {filtered.map(m=>(
+          <div key={m.id} className="bg-white border-2 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all" style={{borderColor:'rgba(82,45,128,0.08)'}}>
+            <div className="p-5 relative overflow-hidden" style={{background:`linear-gradient(135deg,${PURPLE},rgba(82,45,128,0.8))`}}>
+              <div className="flex items-start justify-between mb-3">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black text-white border-2 border-white/30" style={{background:'rgba(255,255,255,0.15)'}}>{m.name[0]}</div>
+                <span className={`text-xs font-black uppercase tracking-widest px-2 py-1 rounded-full ${AVAIL_COLORS[m.avail]}`}>{AVAIL_LABELS[m.avail]}</span>
+              </div>
+              <h3 className="font-black text-white">{m.name}</h3>
+              <p className="text-white/60 text-xs mt-0.5">📍 {m.loc}</p>
+              <div className="absolute -bottom-4 -right-4 text-6xl opacity-5">🎵</div>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <span style={{color:GOLD}}>★</span>
+                <span className="text-xs font-black uppercase tracking-widest" style={{color:GOLD}}>{m.cert}</span>
+                <span className="ml-auto text-xs font-black text-gray-400">Level {m.lvl}</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">{m.instruments.map(i=><span key={i} className="text-xs font-black px-2.5 py-1 rounded-lg" style={{background:'#f8f4ff',color:PURPLE}}>{i}</span>)}</div>
+              <div className="flex flex-wrap gap-1.5">{m.genres.slice(0,3).map(g=><span key={g} className="text-xs border border-gray-200 px-2 py-0.5 rounded-lg text-gray-500">{g}</span>)}</div>
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div className="text-center"><p className="text-lg font-black" style={{color:PURPLE}}>{m.gigs}</p><p className="text-xs text-gray-400">Gigs</p></div>
+                <div className="text-center"><p className="text-lg font-black" style={{color:PURPLE}}>{m.rating}</p><p className="text-xs text-gray-400">Rating</p></div>
+                <button className="text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl" style={{background:PURPLE,boxShadow:`0 4px 8px rgba(82,45,128,0.3)`}}>{isClient?'Request':'View'}</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Misc Views ───────────────────────────────────────────────────────────────
+function SimpleView({ title, emoji, sub }) {
+  return (
+    <div className="p-6 lg:p-10 space-y-6 slide-in">
+      <div><h1 className="text-2xl font-black" style={{color:PURPLE}}>{title}</h1><p className="text-gray-400 text-sm mt-1">{sub}</p></div>
+      <div className="bg-white border-2 rounded-2xl p-16 text-center" style={{borderColor:'rgba(82,45,128,0.08)'}}>
+        <div className="text-6xl mb-4 opacity-20">{emoji}</div>
+        <p className="font-black text-gray-400 text-lg">Coming Soon</p>
+        <p className="text-sm text-gray-400 mt-1">This section will be fully wired once the Supabase backend is connected.</p>
+      </div>
+    </div>
+  );
+}
+
+function OnboardingFlow() {
+  return (
+    <div className="p-6 lg:p-10 space-y-8 slide-in max-w-2xl mx-auto">
+      <div className="p-10 rounded-3xl text-white text-center relative overflow-hidden" style={{background:PURPLE}}>
+        <div className="relative z-10">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl text-3xl" style={{background:GOLD}}>⭐</div>
+          <h2 className="text-3xl font-black mb-3">Get Agency Certified</h2>
+          <p className="text-white/70 text-sm mb-8 max-w-sm mx-auto">Complete our 8-week Musician Certification Track at Kingdom Arts Academy and unlock professional gig placements.</p>
+          <a href="https://school.kingdomarts.org.bw" target="_blank" className="inline-block font-black uppercase tracking-widest text-xs px-8 py-4 rounded-xl shadow-xl" style={{background:GOLD,color:PURPLE}}>
+            Start Certification at KAA
+          </a>
+        </div>
+        <div className="absolute -bottom-10 -right-10 text-9xl opacity-5">⭐</div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[{n:'01',l:'Enroll',d:'Sign up for the Musician Certification Track at Kingdom Arts Academy.'},{n:'02',l:'Train',d:'Complete focused courses, live sessions, and skill assessments (8 weeks).'},{n:'03',l:'Get Placed',d:'Receive your certification and access the full Agency job board.'}].map(s=>(
+          <div key={s.n} className="bg-white border-2 rounded-2xl p-6 space-y-3" style={{borderColor:'rgba(82,45,128,0.08)'}}>
+            <span className="text-3xl font-black" style={{color:'rgba(82,45,128,0.15)'}}>{s.n}</span>
+            <h3 className="font-black">{s.l}</h3>
+            <p className="text-xs text-gray-400 leading-relaxed">{s.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+function App() {
+  const [role, setRole]           = useState(null);
+  const [view, setView]           = useState('home');
+  const [showLogin, setShowLogin] = useState(true);
+
+  const handleLogin = (r) => { setRole(r); setShowLogin(false); };
+
+  const renderContent = () => {
+    if (!role) return null;
+    switch(view) {
+      case 'home':
+        if (role==='musician')     return <MusicianDashboard setView={setView}/>;
+        if (role==='agency_admin') return <AdminDashboard setView={setView}/>;
+        if (role==='client')       return <GuestExplore setView={setView} setShowLogin={setShowLogin}/>;
+        return <GuestExplore setView={setView} setShowLogin={setShowLogin}/>;
+      case 'job-board': case 'job-listings': return <JobBoard role={role}/>;
+      case 'musicians': case 'talent-roster': return <TalentRoster isClient={role==='client'||role==='guest'}/>;
+      case 'onboarding': return <OnboardingFlow/>;
+      case 'my-applications': return <SimpleView title="My Applications" emoji="📋" sub="Your gig applications and status"/>;
+      case 'my-bookings': case 'bookings-manage': return <SimpleView title="Bookings" emoji="📖" sub="Confirmed gigs and upcoming engagements"/>;
+      case 'earnings': case 'payments': return <SimpleView title="Earnings" emoji="💰" sub="Track your income from gigs"/>;
+      case 'messages': return <SimpleView title="Messages" emoji="💬" sub="Your booking conversations"/>;
+      case 'profile': return <SimpleView title="My Profile" emoji="👤" sub="Your musician portfolio and credentials"/>;
+      case 'applications-queue': return <SimpleView title="Applications Queue" emoji="📋" sub="Review and act on musician applications"/>;
+      case 'client-directory': return <SimpleView title="Client Directory" emoji="🌐" sub="Registered clients and promoters"/>;
+      case 'my-requests': return <SimpleView title="My Requests" emoji="📋" sub="Gigs you've posted or requested"/>;
+      case 'settings': return <SimpleView title="Settings" emoji="⚙️" sub="Account preferences and security"/>;
+      default: return <GuestExplore setView={setView} setShowLogin={setShowLogin}/>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {showLogin && <LoginScreen onLogin={handleLogin}/>}
+      {role && (
+        <>
+          <Navbar role={role} view={view} setView={setView} setShowLogin={setShowLogin}/>
+          <div className="flex max-w-7xl mx-auto">
+            <Sidebar role={role} view={view} setView={setView} setShowLogin={setShowLogin}/>
+            <main className="flex-1 min-w-0 pb-20">
+              {renderContent()}
+            </main>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
