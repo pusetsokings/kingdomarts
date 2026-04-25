@@ -73,7 +73,7 @@ const SAMPLE_REQUESTS: SongRequest[] = [
     songTitle: 'Careless Whisper', artistName: 'George Michael', genre: 'Jazz/Pop',
     reason: 'I love the sax solo and want to learn it for a family event.',
     status: 'accepted', priority: 'high',
-    instructorNote: 'Great choice! We'll tackle the iconic riff in our next session.',
+    instructorNote: "Great choice! We'll tackle the iconic riff in our next session.",
     createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
     upvotes: ['stu-2', 'stu-3'],

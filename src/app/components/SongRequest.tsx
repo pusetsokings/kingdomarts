@@ -558,7 +558,7 @@ export const SongRequest = () => {
                 <p className="text-white/40 text-sm">
                   {isInstructor
                     ? 'Manage what your students want to learn'
-                    : 'Tell your instructor which songs you'd like to learn'}
+                    : "Tell your instructor which songs you'd like to learn"}
                 </p>
               </div>
             </div>
